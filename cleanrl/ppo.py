@@ -89,7 +89,9 @@ def make_env(env_id, idx, capture_video, run_name):
             env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
         else:
             # env = gym.make(env_id)
-            env = PointMassEnv()  # Use custom PointMassEnv instead of gym.make
+            env = PointMassEnv(render_mode="rgb_array")  # Use custom PointMassEnv instead of gym.make
+            env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
+
         env = gym.wrappers.RecordEpisodeStatistics(env)
         return env
 
@@ -220,6 +222,7 @@ if __name__ == "__main__":
                         print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
                         writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                         writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
+
 
         # bootstrap value if not done
         with torch.no_grad():
