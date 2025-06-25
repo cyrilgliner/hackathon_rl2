@@ -115,6 +115,13 @@ class PointMassEnv(gym.Env):
         velocity += acceleration * self.dt
         position += velocity * self.dt
         self.state = np.array([position, velocity], dtype=np.float32)
+
+        wall_hit = position >= self.max_position+2
+        if wall_hit:
+            done = True
+            reward = -5000
+            truncation = False
+            return self.state, reward, done, truncation, {}
         
         # Define reward and done condition
         reward = - 1 # Penalize each step to encourage faster solutions
@@ -128,6 +135,8 @@ class PointMassEnv(gym.Env):
             reward -= abs(velocity) * 1 # penalize for high velocity near goal
 
         done = position > self.max_position -1  and position < self.max_position +1  and abs(velocity) < 0.1
+
+        
 
         if done:
             reward = 1000

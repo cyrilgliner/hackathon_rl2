@@ -90,7 +90,7 @@ def make_env(env_id, idx, capture_video, run_name):
         else:
             # env = gym.make(env_id)
             env = PointMassEnv(render_mode="rgb_array")  # Use custom PointMassEnv instead of gym.make
-            env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
+            # env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
 
         env = gym.wrappers.RecordEpisodeStatistics(env)
         return env
