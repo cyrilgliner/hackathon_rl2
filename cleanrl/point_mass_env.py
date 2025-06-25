@@ -119,14 +119,20 @@ class PointMassEnv(gym.Env):
         # Define reward and done condition
         reward = - 1 # Penalize each step to encourage faster solutions
 
-        reward += 1/max(0.1, (self.max_position - position)) * 2    # Reward for staying within bounds
+        reward +=  min(0, position) * 2   # discourage from going neg
 
-        done = position > self.max_position  # Terminate if too far
+        if position > 0 and position < self.max_position:
+            reward += 1/max(0.1, (self.max_position - position)) * 2 # encourage to go right
+
+        if position > self.max_position -1 or position <  self.max_position +1:
+            reward -= abs(velocity) * 1 # penalize for high velocity near goal
+
+        done = position > self.max_position -1  and position < self.max_position +1  and abs(velocity) < 0.1
 
         if done:
             reward = 1000
 
-        if self.counter >= 500:
+        if self.counter >= 500 or position < -20:
             truncation = True
         else:
             truncation = False  # No truncation condition in this simple environment
