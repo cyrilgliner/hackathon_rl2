@@ -13,6 +13,10 @@ import tyro
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 
+import sys
+sys.path.append(".")  # Add current directory to path
+from cleanrl.point_mass_env import PointMassEnv
+
 
 @dataclass
 class Args:
@@ -30,7 +34,7 @@ class Args:
     """the wandb's project name"""
     wandb_entity: str = None
     """the entity (team) of wandb's project"""
-    capture_video: bool = True
+    capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
 
     # Algorithm specific arguments
@@ -40,7 +44,7 @@ class Args:
     """total timesteps of the experiments"""
     learning_rate: float = 2.5e-4
     """the learning rate of the optimizer"""
-    num_envs: int = 4
+    num_envs: int = 1
     """the number of parallel game environments"""
     num_steps: int = 128
     """the number of steps to run in each environment per policy rollout"""
@@ -84,7 +88,8 @@ def make_env(env_id, idx, capture_video, run_name):
             env = gym.make(env_id, render_mode="rgb_array")
             env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
         else:
-            env = gym.make(env_id)
+            # env = gym.make(env_id)
+            env = PointMassEnv()  # Use custom PointMassEnv instead of gym.make
         env = gym.wrappers.RecordEpisodeStatistics(env)
         return env
 
@@ -158,10 +163,12 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
-    # env setup
+    # # env setup
     envs = gym.vector.SyncVectorEnv(
         [make_env(args.env_id, i, args.capture_video, run_name) for i in range(args.num_envs)],
     )
+
+    # envs = make_env(args.env_id, 0, args.capture_video, run_name)()  # Use custom PointMassEnv
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
 
     agent = Agent(envs).to(device)
